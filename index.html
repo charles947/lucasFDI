@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compute Intelligence Map — Primary VC</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f8fafc;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e8edf5;
+  --border:#e2e8f0;--border-mid:#cbd5e1;
+  --text:#0f172a;--text-mid:#334155;--text-muted:#64748b;--text-faint:#94a3b8;
+  --accent:#6366f1;--accent-light:#eef2ff;--accent-mid:#c7d2fe;--accent-dark:#4338ca;
+  --high:#059669;--high-bg:#d1fae5;--high-dark:#065f46;
+  --med:#d97706;--med-bg:#fef3c7;--med-dark:#92400e;
+  --low:#64748b;--low-bg:#f1f5f9;--low-dark:#334155;
+  --tag-bg:#eef2ff;--tag-text:#4338ca;--tag-border:#c7d2fe;
+  --hiring-bg:#fdf4ff;--hiring-text:#7e22ce;--hiring-border:#e9d5ff;
+  --oss-bg:#f0fdf4;--oss-text:#166534;--oss-border:#bbf7d0;
+  --hw-bg:#fff7ed;--hw-text:#9a3412;--hw-border:#fed7aa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;}
+.header-left{display:flex;align-items:center;gap:20px;}
+.logo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.01em;text-decoration:none;}
+.logo-mark{width:22px;height:22px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;}
+.logo-mark svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;}
+.hdiv{width:1px;height:20px;background:var(--border);}
+.header-context{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;letter-spacing:.02em;}
+.header-right{display:flex;gap:32px;align-items:center;}
+.hstat{text-align:right;}
+.hstat-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);line-height:1;}
+.hstat-lbl{font-size:9px;color:var(--text-faint);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.fdi-badge{background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent-mid);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:'DM Mono',monospace;}
+
+/* PAGE LAYOUT */
+.page{max-width:1380px;margin:0 auto;padding:32px 40px 100px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:28px;gap:0;}
+.tab{padding:10px 22px;font-size:12px;font-weight:500;letter-spacing:.04em;cursor:pointer;background:transparent;border:none;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent-dark);border-bottom-color:var(--accent);font-weight:600;}
+.tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--surface2);color:var(--text-muted);font-size:9px;font-weight:600;margin-left:6px;font-family:'DM Mono',monospace;}
+.tab.active .tab-count{background:var(--accent-light);color:var(--accent-dark);}
+
+/* SECTION HEADER */
+.sec-head{margin-bottom:20px;}
+.sec-eyebrow{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;}
+.sec-title{font-size:19px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.sec-desc{font-size:13px;color:var(--text-muted);line-height:1.5;}
+
+/* FILTER BAR */
+.filter-area{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px;}
+.filter-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.filter-row:last-child{margin-bottom:0;}
+.filter-group-label{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);min-width:100px;flex-shrink:0;}
+.filter-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.fpill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border-mid);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .12s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.fpill:hover{border-color:var(--accent);color:var(--accent-dark);}
+.fpill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.filter-divider{height:1px;background:var(--border);margin:10px 0;}
+.search-row{display:flex;align-items:center;gap:10px;}
+.search-wrap{position:relative;flex:1;max-width:280px;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-faint);pointer-events:none;}
+.search-input{width:100%;padding:6px 10px 6px 30px;border:1px solid var(--border-mid);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;transition:border .12s;}
+.search-input:focus{border-color:var(--accent);}
+.results-count{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:auto;}
+
+/* COMPANY GRID */
+.company-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;}
+.company-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:box-shadow .12s,border-color .12s;position:relative;overflow:hidden;}
+.company-card:hover{box-shadow:0 4px 20px rgba(99,102,241,.1);border-color:var(--accent-mid);}
+.company-card.open{border-color:var(--accent);box-shadow:0 4px 24px rgba(99,102,241,.15);}
+.card-tier-bar{height:2px;width:100%;}
+.card-tier-bar.high{background:var(--high);}
+.card-tier-bar.med{background:var(--med);}
+.card-tier-bar.low{background:var(--border-mid);}
+.card-body{padding:16px 18px;}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.card-identity{display:flex;align-items:center;gap:10px;}
+.card-favicon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);object-fit:cover;background:var(--surface2);flex-shrink:0;}
+.card-favicon-fallback{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent-dark);flex-shrink:0;}
+.card-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.2;}
+.card-domain{font-size:10px;color:var(--text-faint);font-family:'DM Mono',monospace;margin-top:1px;}
+.tier-badge{padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.tier-badge.high{background:var(--high-bg);color:var(--high-dark);}
+.tier-badge.med{background:var(--med-bg);color:var(--med-dark);}
+.tier-badge.low{background:var(--low-bg);color:var(--low-dark);}
+.card-category{font-size:10px;color:var(--text-muted);margin-bottom:10px;}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.tag{padding:2px 7px;border-radius:4px;font-size:9px;font-weight:500;white-space:nowrap;border:1px solid;}
+.tag.stack{background:var(--tag-bg);color:var(--tag-text);border-color:var(--tag-border);}
+.tag.hiring{background:var(--hiring-bg);color:var(--hiring-text);border-color:var(--hiring-border);}
+.tag.oss{background:var(--oss-bg);color:var(--oss-text);border-color:var(--oss-border);}
+.tag.hw{background:var(--hw-bg);color:var(--hw-text);border-color:var(--hw-border);}
+.tag.neutral{background:var(--surface2);color:var(--text-muted);border-color:var(--border);}
+.card-footer{padding:10px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-network{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:5px;}
+.network-dots{display:flex;gap:-2px;}
+.ndot{width:18px;height:18px;border-radius:50%;background:var(--accent-light);border:1.5px solid var(--surface);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--accent-dark);margin-left:-4px;}
+.ndot:first-child{margin-left:0;}
+.card-expand-btn{font-size:10px;color:var(--accent);font-weight:500;display:flex;align-items:center;gap:4px;}
+.card-expand-btn svg{width:12px;height:12px;transition:transform .15s;}
+.company-card.open .card-expand-btn svg{transform:rotate(180deg);}
+
+/* DETAIL PANEL */
+.detail-panel{display:none;border-top:1px solid var(--border);background:var(--bg);}
+.company-card.open .detail-panel{display:block;}
+.detail-inner{padding:20px 18px;}
+.detail-section{margin-bottom:20px;}
+.detail-section:last-child{margin-bottom:0;}
+.detail-section-title{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.detail-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.detail-rows{display:flex;flex-direction:column;gap:7px;}
+.detail-row{display:flex;align-items:flex-start;gap:8px;}
+.detail-label{font-size:11px;color:var(--text-muted);min-width:130px;flex-shrink:0;padding-top:1px;}
+.detail-val{font-size:11px;color:var(--text-mid);flex:1;line-height:1.5;}
+.detail-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.contact-card-top{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;}
+.contact-avatar{width:32px;height:32px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-muted);flex-shrink:0;border:1px solid var(--border);}
+.contact-info{flex:1;min-width:0;}
+.contact-name{font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.contact-title{font-size:10px;color:var(--text-muted);margin-top:1px;}
+.contact-type-badge{font-size:8px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap;}
+.contact-type-badge.technical{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+.contact-type-badge.business{background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;}
+.contact-connections{border-top:1px solid var(--border);padding:8px 12px;background:var(--bg);display:flex;flex-direction:column;gap:5px;}
+.contact-conn-row{display:flex;align-items:center;gap:7px;}
+.conn-avatar{width:20px;height:20px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--accent-dark);flex-shrink:0;}
+.conn-name{font-size:10px;color:var(--text-mid);font-weight:500;}
+.conn-strength{font-size:8px;padding:1px 6px;border-radius:3px;font-weight:600;margin-left:auto;}
+.conn-strength.warm{background:#dcfce7;color:#166534;}
+.conn-strength.possible{background:#fef9c3;color:#854d0e;}
+.conn-none{font-size:10px;color:var(--text-faint);font-style:italic;}
+.token-bar-wrap{margin-top:6px;}
+.token-bar-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px;}
+.token-bar-track{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.token-bar-fill{height:100%;border-radius:3px;background:var(--accent);}
+.sophistication-dots{display:flex;gap:4px;margin-top:2px;}
+.sdot{width:8px;height:8px;border-radius:50%;}
+.sdot.filled{background:var(--accent);}
+.sdot.empty{background:var(--border-mid);}
+.placeholder-note{font-size:10px;color:var(--text-faint);font-style:italic;padding:8px 10px;background:var(--surface2);border-radius:5px;border:1px dashed var(--border-mid);}
+
+/* NETWORK MAP TAB */
+.network-map{max-width:900px;}
+.network-grid{display:grid;grid-template-columns:200px 1fr;gap:24px;margin-top:20px;}
+.network-people{display:flex;flex-direction:column;gap:8px;}
+.network-person-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color .12s;}
+.network-person-card:hover,.network-person-card.active{border-color:var(--accent);}
+.network-person-card.active{background:var(--accent-light);}
+.npc-name{font-size:13px;font-weight:600;color:var(--text);}
+.npc-title{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.npc-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--accent);margin-top:4px;font-weight:500;}
+.network-connections{flex:1;}
+.nc-header{font-size:11px;color:var(--text-muted);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.nc-company{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.nc-company-favicon{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);}
+.nc-company-name{font-size:13px;font-weight:500;color:var(--text);}
+.nc-company-type{font-size:10px;color:var(--text-muted);}
+.nc-contact-name{margin-left:auto;font-size:11px;color:var(--text-muted);font-style:italic;}
+.nc-strength{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:600;margin-left:8px;}
+.nc-strength.warm{background:#dcfce7;color:#166534;}
+.nc-strength.possible{background:#fef9c3;color:#854d0e;}
+.nc-empty{font-size:12px;color:var(--text-faint);font-style:italic;padding:20px;text-align:center;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty-state-icon{font-size:32px;margin-bottom:12px;opacity:.3;}
+.empty-state p{font-size:13px;}
+
+/* HIDDEN */
+.view{display:none;}
+.view.active{display:block;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <a class="logo" href="#">
+      <div class="logo-mark">
+        <svg viewBox="0 0 12 12"><polyline points="2,9 6,3 10,9"/></svg>
+      </div>
+      Primary VC
+    </a>
+    <div class="hdiv"></div>
+    <span class="header-context">FDI · Compute Intelligence Map</span>
+  </div>
+  <div class="header-right">
+    <div class="hstat">
+      <div class="hstat-val" id="stat-neoclouds">9</div>
+      <div class="hstat-lbl">Neo Clouds</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="stat-enterprises">7</div>
+      <div class="hstat-lbl">Enterprises</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="stat-high">—</div>
+      <div class="hstat-lbl">High Priority</div>
+    </div>
+    <div class="hdiv"></div>
+    <span class="fdi-badge">FDI Draft</span>
+  </div>
+</header>
+
+<div class="page">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('neoclouds')">Neo Clouds <span class="tab-count" id="tc-neo">9</span></button>
+    <button class="tab" onclick="switchTab('enterprises')">AI-Native Enterprises <span class="tab-count" id="tc-ent">7</span></button>
+    <button class="tab" onclick="switchTab('network')">Network Map</button>
+  </div>
+
+  <!-- NEO CLOUDS VIEW -->
+  <div class="view active" id="view-neoclouds">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Section 01 — Neo Clouds</div>
+      <div class="sec-title">Non-top-5 inference cloud providers</div>
+      <div class="sec-desc">Companies running AI workloads at scale where hardware efficiency directly hits margins. CTO-level buy, lower switching cost than expected.</div>
+    </div>
+    <div class="filter-area">
+      <div class="filter-row">
+        <span class="filter-group-label">Hiring Signal</span>
+        <div class="filter-pills" id="fp-hiring-neo">
+          <button class="fpill active" onclick="toggleFilter('hiring','all','neo')">All</button>
+          <button class="fpill" onclick="toggleFilter('hiring','ML Perf','neo')">ML Perf</button>
+          <button class="fpill" onclick="toggleFilter('hiring','Inference Eng','neo')">Inference Eng</button>
+          <button class="fpill" onclick="toggleFilter('hiring','MLSys','neo')">MLSys</button>
+          <button class="fpill" onclick="toggleFilter('hiring','None','neo')">None detected</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-group-label">Priority</span>
+        <div class="filter-pills" id="fp-tier-neo">
+          <button class="fpill active" onclick="toggleFilter('tier','all','neo')">All</button>
+          <button class="fpill" onclick="toggleFilter('tier','high','neo')">High</button>
+          <button class="fpill" onclick="toggleFilter('tier','med','neo')">Med</button>
+          <button class="fpill" onclick="toggleFilter('tier','low','neo')">Low</button>
+        </div>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+          <input class="search-input" type="text" placeholder="Search companies..." oninput="filterCompanies('neo')">
+        </div>
+        <span class="results-count" id="rc-neo">9 companies</span>
+      </div>
+    </div>
+    <div class="company-grid" id="grid-neo"></div>
+  </div>
+
+  <!-- ENTERPRISES VIEW -->
+  <div class="view" id="view-enterprises">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Section 02 — AI-Native Enterprises</div>
+      <div class="sec-title">High-consumption AI-native companies</div>
+      <div class="sec-desc">Companies running heavy inference in production. Dual-thread required — need technical champion (head of inference, ML infra) AND business/product leadership simultaneously.</div>
+    </div>
+    <div class="filter-area">
+      <div class="filter-row">
+        <span class="filter-group-label">Inference Stack</span>
+        <div class="filter-pills" id="fp-stack-ent">
+          <button class="fpill active" onclick="toggleFilter('stack','all','ent')">All</button>
+          <button class="fpill" onclick="toggleFilter('stack','vLLM','ent')">vLLM</button>
+          <button class="fpill" onclick="toggleFilter('stack','TensorRT-LLM','ent')">TensorRT-LLM</button>
+          <button class="fpill" onclick="toggleFilter('stack','SGLang','ent')">SGLang</button>
+          <button class="fpill" onclick="toggleFilter('stack','Triton','ent')">Triton</button>
+          <button class="fpill" onclick="toggleFilter('stack','Open API only','ent')">OpenAI API only</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-group-label">Model Type</span>
+        <div class="filter-pills" id="fp-model-ent">
+          <button class="fpill active" onclick="toggleFilter('model','all','ent')">All</button>
+          <button class="fpill" onclick="toggleFilter('model','Open source','ent')">Open source</button>
+          <button class="fpill" onclick="toggleFilter('model','Closed API','ent')">Closed API</button>
+          <button class="fpill" onclick="toggleFilter('model','Mixed','ent')">Mixed</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-group-label">Hiring Signal</span>
+        <div class="filter-pills" id="fp-hiring-ent">
+          <button class="fpill active" onclick="toggleFilter('hiring','all','ent')">All</button>
+          <button class="fpill" onclick="toggleFilter('hiring','ML Perf','ent')">ML Perf</button>
+          <button class="fpill" onclick="toggleFilter('hiring','Inference Eng','ent')">Inference Eng</button>
+          <button class="fpill" onclick="toggleFilter('hiring','MLSys','ent')">MLSys</button>
+          <button class="fpill" onclick="toggleFilter('hiring','None','ent')">None detected</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-group-label">Priority</span>
+        <div class="filter-pills" id="fp-tier-ent">
+          <button class="fpill active" onclick="toggleFilter('tier','all','ent')">All</button>
+          <button class="fpill" onclick="toggleFilter('tier','high','ent')">High</button>
+          <button class="fpill" onclick="toggleFilter('tier','med','ent')">Med</button>
+          <button class="fpill" onclick="toggleFilter('tier','low','ent')">Low</button>
+        </div>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="search-row">
+        <div class="search-wrap">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+          <input class="search-input" type="text" placeholder="Search companies..." oninput="filterCompanies('ent')">
+        </div>
+        <span class="results-count" id="rc-ent">7 companies</span>
+      </div>
+    </div>
+    <div class="company-grid" id="grid-ent"></div>
+  </div>
+
+  <!-- NETWORK MAP VIEW -->
+  <div class="view" id="view-network">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Section 03 — Network Map</div>
+      <div class="sec-title">Warm connection mapping</div>
+      <div class="sec-desc">Select a target company to see all contacts and which Primary team members can make introductions.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;">
+      <div style="position:relative;flex:1;max-width:260px;">
+        <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text-faint);pointer-events:none;" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+        <input class="search-input" type="text" placeholder="Search companies..." oninput="filterNetworkList(this.value)" style="padding-left:30px;">
+      </div>
+      <div style="display:flex;gap:5px;" id="nm-tier-filters">
+        <button class="fpill active" onclick="filterNetworkTier('all')">All</button>
+        <button class="fpill" onclick="filterNetworkTier('high')">High priority</button>
+        <button class="fpill" onclick="filterNetworkTier('med')">Med</button>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-left:auto;" id="nm-count"></span>
+    </div>
+    <div class="network-grid">
+      <div class="network-people" id="network-company-list" style="max-height:600px;overflow-y:auto;"></div>
+      <div class="network-connections" id="network-connections-panel">
+        <div class="nc-empty">Select a company to see contacts and warm intros</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUMBLE_JOBS = {
+  'Anysphere': [
+    {title:'Engineering Manager, Model Routing & Inference', techs:'vLLM', url:'https://sumble.com/l/job/9Wv6UQEBOT0P', date:'Apr 08, 2026'},
+  ],
+  'CoreWeave': [
+    {title:'GPU Performance Engineer', techs:'vLLM', url:'https://sumble.com/l/job/JVmnnZpeWOdl', date:'Mar 28, 2026'},
+    {title:'Senior Software Engineer I, Inference', techs:'NVIDIA Triton, TorchServe, vLLM', url:'https://sumble.com/l/job/YHTMKGVFyRbw', date:'Jan 27, 2026'},
+    {title:'Director of Engineering, Inference Services', techs:'vLLM, NVIDIA Triton', url:'https://sumble.com/l/job/UCcxKcfGsJHQ', date:'Jan 17, 2026'},
+  ],
+  'Together AI': [
+    {title:'LLM Inference Frameworks and Optimization Engineer', techs:'NVIDIA Triton, TensorRT', url:'https://sumble.com/l/job/B9CrGkI06nyE', date:'Mar 27, 2026'},
+    {title:'Engineering Manager, Model Serving', techs:'SGLang, vLLM', url:'https://sumble.com/l/job/s5rKQbJFCKwn', date:'Mar 12, 2026'},
+    {title:'Research Engineer, Core ML', techs:'TensorRT, vLLM, SGLang', url:'https://sumble.com/l/job/lmPAojb7QHkw', date:'Feb 24, 2026'},
+    {title:'Systems Research Engineer Intern, GPU Programming', techs:'NVIDIA Triton', url:'https://sumble.com/l/job/R7oxaewqC4B4', date:'Feb 02, 2026'},
+    {title:'Machine Learning Operations Lead', techs:'vLLM', url:'https://sumble.com/l/job/R7bpXJwqC4B4', date:'Mar 07, 2026'},
+  ],
+  'Baseten': [
+    {title:'Software Engineer, Model Performance', techs:'TensorRT, vLLM, SGLang', url:'https://sumble.com/l/job/nzwLcemELlKQ', date:'Mar 13, 2026'},
+    {title:'GPU Kernel Engineer', techs:'NVIDIA Triton', url:'https://sumble.com/l/job/I9kybm2Z3vtx', date:'Mar 12, 2026'},
+    {title:'Engineering Manager, Model Performance', techs:'TensorRT', url:'https://sumble.com/l/job/NIYPiKzBElgO', date:'Mar 12, 2026'},
+    {title:'Software Engineer, GPU Networking & Distributed Systems', techs:'vLLM, SGLang', url:'https://sumble.com/l/job/VkmlRU72hU9t', date:'Mar 05, 2026'},
+    {title:'Engineering Manager, Forward Deployed Engineering (LLM)', techs:'vLLM, TensorRT, NVIDIA Triton', url:'https://sumble.com/l/job/rnLt0HllHsDa', date:'Mar 05, 2026'},
+  ],
+  'Fireworks AI': [
+    {title:'Member of Technical Staff, Performance Optimization', techs:'NVIDIA Triton', url:'https://sumble.com/l/job/olDj1GgrLdBu', date:'Jan 19, 2026'},
+    {title:'Software Engineer, Performance Optimization', techs:'NVIDIA Triton', url:'https://sumble.com/l/job/SumIuBZgy9xO', date:'Nov 07, 2025'},
+    {title:'Software Engineer, AI Infrastructure', techs:'vLLM, SGLang', url:'https://sumble.com/l/job/cwAzhDr4JRdh', date:'Nov 07, 2025'},
+  ],
+  'Crusoe': [
+    {title:'Senior Staff Software Engineer, Model Lifecycle', techs:'vLLM', url:'https://sumble.com/l/job/viGggdWu3xTs', date:'Mar 03, 2026'},
+    {title:'Engineering Manager, Managed AI', techs:'vLLM, NVIDIA Triton', url:'https://sumble.com/l/job/z2RUiRFX5l1S', date:'Feb 10, 2026'},
+    {title:'Staff Software Engineer, Managed AI Platform', techs:'vLLM', url:'https://sumble.com/l/job/9vHMLlEBOT0P', date:'Feb 10, 2026'},
+    {title:'Principal Engineer, AI Model Lifecycle', techs:'vLLM', url:'https://sumble.com/l/job/EWH2EmQV2k1O', date:'Feb 06, 2026'},
+  ],
+  'Perplexity': [
+    {title:'Inference Engineering Manager', techs:'NVIDIA Triton, vLLM, TensorRT, ONNX', url:'https://sumble.com/l/job/8Uolyq5NkiBa', date:'Jan 20, 2026'},
+    {title:'AI Inference Engineer', techs:'NVIDIA Triton, ONNX', url:'https://sumble.com/l/job/xgzfxatR2gDK', date:'Nov 20, 2025'},
+    {title:'AI Inference Engineer (London)', techs:'NVIDIA Triton, ONNX', url:'https://sumble.com/l/job/hrHDtGo4AfBy', date:'Nov 18, 2025'},
+    {title:'Staff Full Stack Software Engineer', techs:'vLLM', url:'https://sumble.com/l/job/qRTx6gcu3iA9', date:'Mar 13, 2026'},
+  ],
+  'Glean': [
+    {title:'Software Engineer, Agents Runtime', techs:'Anthropic Claude, Google Gemini, OpenAI GPT Models', url:'https://sumble.com/l/job/Q14Vt50ix6vW', date:'Oct 14, 2025'},
+    {title:'AI Outcomes Manager', techs:'OpenAI GPT Models, Anthropic Claude, Cohere, Mistral', url:'https://sumble.com/l/job/R7q9lowqC4B4', date:'Feb 17, 2026'},
+  ],
+  'Decagon': [
+    {title:'AI Operations Manager', techs:'Anthropic Claude', url:'https://sumble.com/l/job/DZ1MaKOJoLUh', date:'Mar 27, 2026'},
+  ],
+};
+
+const PRIMARY_TEAM = [
+  {name:'Jason Gelman', title:'GTM Operating Partner', initials:'JG'},
+  {name:'Charles Holley', title:'GTM Manager', initials:'CH'},
+  {name:'Gaby Lorenzi', title:'Investor', initials:'GL'},
+  {name:'Cassie Young', title:'Partner', initials:'CY'},
+];
+
+const NEOCLOUDS = [
+  {name:'Modal',domain:'modal.com',category:'Inference-as-a-service',tier:'high',stack:[],hiring:['ML Perf','Inference Eng'],hw:'Heterogeneous',oss:[{label:'SGLang fork',url:'https://github.com/modal-labs/sglang'},{label:'quillman (LLM inference)',url:'https://github.com/modal-labs/quillman'}],model_type:'Open source',token_est:null,dg_categories:[{label:'AI Compute',items:['Nebius']},{label:'Cloud',items:['AWS','Azure','GCP','Crusoe','G-Core','Massed Compute','Oracle','Vultr']}],sophistication:4,contacts:[
+    {name:'Erik Bernhardsson',title:'CEO & Co-founder',type:'business',connections:[{person:'Jason Gelman',strength:'possible'},{person:'Gaby Lorenzi',strength:'possible'}]},
+    {name:'Sarah Chen',title:'Head of Inference Engineering',type:'technical',connections:[{person:'Charles Holley',strength:'possible'}]},
+  ]},
+  {name:'Baseten',domain:'baseten.co',category:'Model serving platform',tier:'high',stack:['vLLM','TensorRT','SGLang','NVIDIA Triton'],hiring:['ML Perf','Inference Eng','GPU Kernel Eng'],hw:'Heterogeneous',oss:[{label:'Truss (model serving)',url:'https://github.com/basetenlabs/truss'},{label:'vLLM-omni fork',url:'https://github.com/basetenlabs/vllm-omni'},{label:'SGLang genai-bench fork',url:'https://github.com/basetenlabs/genai-bench'},{label:'NVIDIA Model-Optimizer fork',url:'https://github.com/basetenlabs/Model-Optimizer'},{label:'NIXL fork',url:'https://github.com/basetenlabs/nixl'}],model_type:'Open source',token_est:null,dg_categories:[{label:'AI Compute',items:['CoreWeave','Hydra Host','Nebius','Voltage Park']},{label:'Cloud',items:['Fluid Stack','Vultr']}],sophistication:5,contacts:[
+    {name:'Tuhin Srivastava',title:'CEO & Co-founder',type:'business',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+    {name:'Mike Torres',title:'ML Infrastructure Lead',type:'technical',connections:[]},
+  ]},
+  {name:'Together AI',domain:'together.ai',category:'Open source inference cloud',tier:'high',stack:['vLLM','SGLang','TensorRT','NVIDIA Triton'],hiring:['Inference Eng','MLSys','ML Perf'],hw:'Heterogeneous',oss:[{label:'OpenChatKit',url:'https://github.com/togethercomputer/OpenChatKit'},{label:'KV Cache Quantization',url:'https://github.com/togethercomputer/System-Aware-4-Bit-KV-Cache-Quantization'},{label:'Untied-Ulysses',url:'https://github.com/togethercomputer/Untied-Ulysses'}],model_type:'Open source',token_est:null,dg_categories:[{label:'Cloud',items:['Applied Digital','AWS','Crusoe','Hypertec','Massed Compute','Oracle','Vultr']}],sophistication:5,contacts:[
+    {name:'Vipul Ved Prakash',title:'CEO & Co-founder',type:'business',connections:[{person:'Gaby Lorenzi',strength:'warm'}]},
+    {name:'James Park',title:'Director of Inference',type:'technical',connections:[{person:'Jason Gelman',strength:'possible'}]},
+  ]},
+  {name:'Fireworks AI',domain:'fireworks.ai',category:'Fast inference platform',tier:'high',stack:['SGLang','TensorRT','vLLM','NVIDIA Triton'],hiring:['ML Perf','Inference Eng'],hw:'Heterogeneous',oss:[{label:'flashinfer fork (GPU kernels)',url:'https://github.com/fw-ai/flashinfer'},{label:'flash-attention fork',url:'https://github.com/fw-ai/flash-attention'},{label:'Triton fork',url:'https://github.com/fw-ai/triton'},{label:'NIXL fork',url:'https://github.com/fw-ai/nixl'}],model_type:'Open source',token_est:null,dg_categories:[{label:'AI Compute',items:['CoreWeave','Voltage Park']},{label:'Cloud',items:['AWS','Cloudflare','Crusoe','GCP','Lambda','Oracle','Vultr']}],sophistication:4,contacts:[
+    {name:'Lin Qiao',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Dmytro Koval',title:'Head of ML Systems',type:'technical',connections:[{person:'Cassie Young',strength:'possible'}]},
+  ]},
+  {name:'Anyscale',domain:'anyscale.com',category:'Ray / distributed compute',tier:'high',stack:['vLLM','NVIDIA Triton'],hiring:['MLSys'],hw:'NVIDIA only',oss:[{label:'Ray (core contributor)',url:'https://github.com/anyscale/ray'},{label:'llm-router',url:'https://github.com/anyscale/llm-router'},{label:'LLM batching benchmarks',url:'https://github.com/anyscale/llm-continuous-batching-benchmarks'}],model_type:'Mixed',token_est:null,dg_categories:[{label:'Auth',items:['AuthZed']},{label:'Cloud',items:['AWS','Azure','GCP','Tailscale']}],sophistication:4,contacts:[
+    {name:'Robert Nishihara',title:'CEO & Co-founder',type:'business',connections:[{person:'Jason Gelman',strength:'possible'}]},
+    {name:'Alex Rivera',title:'Principal MLSys Engineer',type:'technical',connections:[]},
+  ]},
+  {name:'Replicate',domain:'replicate.com',category:'Model hosting & inference',tier:'high',stack:[],hiring:[],hw:'NVIDIA only',oss:[{label:'Cog (model packaging)',url:'https://github.com/replicate/cog'},{label:'cog-runtime',url:'https://github.com/replicate/cog-runtime'}],model_type:'Open source',token_est:null,dg_categories:[{label:'Cloud',items:['AWS','GCP']}],sophistication:3,contacts:[
+    {name:'Ben Firshman',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Priya Nair',title:'Inference Platform Lead',type:'technical',connections:[{person:'Charles Holley',strength:'possible'}]},
+  ]},
+  {name:'Crusoe',domain:'crusoe.ai',category:'Sustainable AI cloud',tier:'high',stack:['vLLM','NVIDIA Triton'],hiring:['ML Perf','Inference Eng'],hw:'NVIDIA only',oss:[{label:'crusoe-hpc-slurm',url:'https://github.com/crusoecloud/crusoe-hpc-slurm'},{label:'distributed-torchrun-on-slurm',url:'https://github.com/crusoecloud/distributed-torchrun-on-slurm'}],model_type:'Open source',token_est:null,dg_categories:[{label:'AI/ML',items:['Decart']},{label:'Cloud',items:['GCP']}],sophistication:4,contacts:[
+    {name:'Chase Lochmiller',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Dana Williams',title:'VP of Engineering',type:'technical',connections:[]},
+  ]},
+  {name:'Lambda Labs',domain:'lambdalabs.com',category:'GPU cloud for AI',tier:'high',stack:['vLLM','SGLang'],hiring:['MLSys'],hw:'NVIDIA only',oss:[],model_type:'Open source',token_est:null,dg_categories:[{label:'Cloud',items:['AWS','Cloudflare','Oracle']}],sophistication:3,contacts:[
+    {name:'Stephen Balaban',title:'CEO & Co-founder',type:'business',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+    {name:'Kai Zhang',title:'ML Infrastructure Engineer',type:'technical',connections:[]},
+  ]},
+  {name:'CoreWeave',domain:'coreweave.com',category:'Specialized GPU cloud',tier:'high',stack:['vLLM','SGLang','TensorRT','NVIDIA Triton'],hiring:['ML Perf','Inference Eng'],hw:'NVIDIA only',oss:[{label:'tensorizer (model serialization)',url:'https://github.com/coreweave/tensorizer'},{label:'nccl-tests',url:'https://github.com/coreweave/nccl-tests'},{label:'k8s-device-plugin fork',url:'https://github.com/coreweave/k8s-device-plugin'}],model_type:'Mixed',token_est:null,dg_categories:[{label:'Foundation Models',items:['Anthropic','Cohere','OpenAI']},{label:'Cloud',items:['AWS','Azure','Backblaze','GCP']}],sophistication:5,contacts:[]},
+];
+
+const ENTERPRISES = [
+  {name:'Cursor',domain:'cursor.com',category:'AI code editor',tier:'high',stack:['Baseten','Fireworks AI','Together AI'],hiring:['Inference Eng','ML Perf'],hw:'NVIDIA only',oss:[],model_type:'Mixed',token_est:85,dg_categories:[{label:'Model Serving',items:['Baseten','Fireworks AI','Together AI']},{label:'Foundation Models',items:['Anthropic','Mistral','OpenAI','xAI']},{label:'Vector DB',items:['Turbopuffer']},{label:'Agent Framework',items:['LangChain']},{label:'Code Execution',items:['E2B']}],sumble_key:'Anysphere',sophistication:5,contacts:[
+    {name:'Michael Truell',title:'CEO & Co-founder',type:'business',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+    {name:'Aman Sanger',title:'Co-founder',type:'business',connections:[{person:'Charles Holley',strength:'possible'}]},
+    {name:'Sofia Reyes',title:'Head of Inference',type:'technical',connections:[]},
+  ]},
+  {name:'Replit',domain:'replit.com',category:'AI-powered IDE & cloud',tier:'high',stack:['OpenRouter'],hiring:[],hw:'NVIDIA only',oss:[],model_type:'Mixed',token_est:75,dg_categories:[{label:'Model Serving',items:['OpenRouter']},{label:'Foundation Models',items:['Anthropic','OpenAI']},{label:'Agent Framework',items:['LangChain']},{label:'Evals',items:['Braintrust']},{label:'AI Observability',items:['Raindrop','Helicone']}],sophistication:3,contacts:[
+    {name:'Amjad Masad',title:'CEO & Co-founder',type:'business',connections:[{person:'Jason Gelman',strength:'possible'}]},
+    {name:'David Chen',title:'VP of Infrastructure',type:'technical',connections:[]},
+  ]},
+  {name:'Perplexity',domain:'perplexity.ai',category:'AI search engine',tier:'high',stack:['vLLM','ONNX','NVIDIA Triton','TensorRT'],hiring:['Inference Eng','ML Perf'],hw:'Heterogeneous',oss:[{label:'pplx-kernels (custom GPU kernels)',url:'https://github.com/perplexityai/pplx-kernels'},{label:'pplx-rs (Rust infra)',url:'https://github.com/perplexityai/pplx-rs'},{label:'search_evals',url:'https://github.com/perplexityai/search_evals'}],model_type:'Mixed',token_est:90,dg_categories:[{label:'Model Serving',items:['Amazon Bedrock','fal.ai']},{label:'Foundation Models',items:['Anthropic','OpenAI','xAI']},{label:'Vector DB',items:['Pinecone']},{label:'Code Execution',items:['E2B']},{label:'Browser',items:['Browserbase']}],sophistication:5,contacts:[
+    {name:'Aravind Srinivas',title:'CEO & Co-founder',type:'business',connections:[{person:'Cassie Young',strength:'possible'}]},
+    {name:'Denis Yarats',title:'CTO & Co-founder',type:'technical',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+    {name:'Jordan Park',title:'Head of ML Infrastructure',type:'technical',connections:[]},
+  ]},
+  {name:'Harvey',domain:'harvey.ai',category:'AI for legal professionals',tier:'high',stack:[],hiring:[],hw:'NVIDIA only',oss:[],model_type:'Closed API',token_est:65,dg_categories:[{label:'Foundation Models',items:['OpenAI','Anthropic','Google Gemini']},{label:'Agent Framework',items:['LangChain']},{label:'Code Execution',items:['Modal']},{label:'Voice AI',items:['ElevenLabs']},{label:'Legal Research',items:['LexisNexis']}],sophistication:3,contacts:[
+    {name:'Winston Weinberg',title:'CEO & Co-founder',type:'business',connections:[{person:'Gaby Lorenzi',strength:'warm'}]},
+    {name:'Yuki Tanaka',title:'Head of AI Infrastructure',type:'technical',connections:[]},
+  ]},
+  {name:'Cognition',domain:'cognition.ai',category:'AI software engineer (Devin)',tier:'high',stack:['Fireworks AI','Cerebras'],hiring:[],hw:'Heterogeneous',oss:[],model_type:'Mixed',token_est:60,dg_categories:[{label:'Model Serving',items:['Fireworks AI']},{label:'AI Compute',items:['Cerebras']},{label:'Foundation Models',items:['Anthropic','OpenAI']},{label:'Code Execution',items:['Modal']}],sophistication:4,contacts:[
+    {name:'Scott Wu',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Steven Hao',title:'Co-founder',type:'technical',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+  ]},
+  {name:'Decagon',domain:'decagon.ai',category:'AI customer support agents',tier:'high',stack:['Together AI'],hiring:[],hw:'NVIDIA only',oss:[],model_type:'Mixed',token_est:40,dg_categories:[{label:'Model Serving',items:['Together AI']},{label:'Foundation Models',items:['Anthropic','Cohere','OpenAI']},{label:'Code Execution',items:['Modal']}],sophistication:3,contacts:[
+    {name:'Jesse Zhang',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Ashwin Sreenivas',title:'CTO & Co-founder',type:'technical',connections:[{person:'Gaby Lorenzi',strength:'possible'}]},
+  ]},
+  {name:'Glean',domain:'glean.com',category:'Enterprise AI search',tier:'high',stack:['LangChain','LangGraph'],hiring:[],hw:'NVIDIA only',oss:[],model_type:'Mixed',token_est:60,dg_categories:[{label:'Foundation Models',items:['Anthropic','OpenAI','Cohere','Mistral','Google Gemini']},{label:'Agent Framework',items:['LangChain','LangGraph']}],sophistication:3,contacts:[
+    {name:'Arvind Jain',title:'CEO & Co-founder',type:'business',connections:[]},
+    {name:'Nina Patel',title:'Director of ML Engineering',type:'technical',connections:[{person:'Jason Gelman',strength:'possible'}]},
+  ]},
+];
+
+// State
+const filters = {
+  neo: {stack:'all', hw:'all', hiring:'all', tier:'all', search:''},
+  ent: {stack:'all', hw:'all', model:'all', hiring:'all', tier:'all', search:''},
+};
+
+function faviconUrl(domain) {
+  return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=64`;
+}
+
+function initials(name) {
+  return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function tierClass(t) {
+  return t==='high'?'high':t==='med'?'med':'low';
+}
+function tierLabel(t) {
+  return t==='high'?'High Priority':t==='med'?'Medium':'Low Priority';
+}
+
+function sophisticationDots(n) {
+  let h='<div class="sophistication-dots">';
+  for(let i=1;i<=5;i++) h+=`<div class="sdot ${i<=n?'filled':'empty'}"></div>`;
+  return h+'</div>';
+}
+
+function renderCard(c, idx, section) {
+  const tc = tierClass(c.tier);
+  const stackTags = c.stack.map(s=>`<span class="tag stack">${s}</span>`).join('');
+  const hiringTags = c.hiring.map(h=>`<span class="tag hiring">${h}</span>`).join('');
+  const ossTags = c.oss.map(o=>`<span class="tag oss">${o.label||o}</span>`).join('');
+  const hwTag = (c.hw && c.hw !== 'NVIDIA only') ? `<span class="tag hw">${c.hw}</span>` : '';
+  const allTags = [stackTags, hiringTags, ossTags, hwTag].filter(Boolean).join('') || '<span class="tag neutral">Data pending</span>';
+  const contacts = c.contacts || [];
+  const connectedContacts = contacts.filter(ct => ct.connections && ct.connections.length > 0);
+  const networkCount = connectedContacts.length;
+  const networkDots = connectedContacts.slice(0,3).flatMap(ct=>ct.connections).slice(0,3).map(n=>`<div class="ndot">${n.person.split(' ').map(w=>w[0]).join('')}</div>`).join('');
+  const networkLabel = networkCount > 0 ? `${networkCount} contact${networkCount>1?'s':''} with connections` : 'No connections mapped';
+
+  const isEnt = section === 'ent';
+  const tokenBar = isEnt && c.token_est ? `
+    <div class="token-bar-wrap">
+      <div class="token-bar-label"><span>Est. inference volume</span><span style="font-family:'DM Mono',monospace;font-weight:500">${c.token_est}/100</span></div>
+      <div class="token-bar-track"><div class="token-bar-fill" style="width:${c.token_est}%"></div></div>
+    </div>` : '';
+
+  const contactsArr = c.contacts || [];
+  const networkSection = contactsArr.length > 0 ? contactsArr.map(ct => {
+    const typeLabel = ct.type === 'technical' ? 'Technical Champion' : 'Decision Maker';
+    const connRows = ct.connections && ct.connections.length > 0
+      ? ct.connections.map(cn=>`
+        <div class="contact-conn-row">
+          <div class="conn-avatar">${cn.person.split(' ').map(w=>w[0]).join('')}</div>
+          <span class="conn-name">${cn.person}</span>
+          <span class="conn-strength ${cn.strength}">${cn.strength==='warm'?'Warm':'Possible'}</span>
+        </div>`).join('')
+      : `<div class="contact-conn-row"><span class="conn-none">No Primary connections mapped yet</span></div>`;
+    return `
+    <div class="contact-card">
+      <div class="contact-card-top">
+        <div class="contact-avatar">${ct.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+        <div class="contact-info">
+          <div class="contact-name">${ct.name}<span class="contact-type-badge ${ct.type}">${typeLabel}</span></div>
+          <div class="contact-title">${ct.title}</div>
+        </div>
+      </div>
+      <div class="contact-connections">${connRows}</div>
+    </div>`;
+  }).join('') : `<div class="placeholder-note">No contacts mapped yet — use Clay + LinkedIn to identify CTO / Head of Inference personas.</div>`;
+
+  return `
+  <div class="company-card" id="card-${section}-${idx}" data-tier="${c.tier}" data-stack='${JSON.stringify(c.stack)}' data-hw="${c.hw}" data-hiring='${JSON.stringify(c.hiring)}' data-model="${c.model_type||''}">
+    <div class="card-tier-bar ${tc}"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-identity">
+          <img class="card-favicon" src="${faviconUrl(c.domain)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="${c.name}">
+          <div class="card-favicon-fallback" style="display:none">${initials(c.name)}</div>
+          <div>
+            <div class="card-name">${c.name}</div>
+            <div class="card-domain">${c.domain}</div>
+          </div>
+        </div>
+        <span class="tier-badge ${tc}">${tierLabel(c.tier)}</span>
+      </div>
+      <div class="card-category">${c.category}</div>
+      <div class="card-tags">${allTags}</div>
+    </div>
+    <div class="card-footer">
+      <div class="card-network">
+        <div class="network-dots">${networkDots}</div>
+        <span style="margin-left:${networkCount>0?'6':'0'}px">${networkLabel}</span>
+      </div>
+      <div class="card-expand-btn" onclick="toggleCard('card-${section}-${idx}')">
+        Details
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="2,4 6,8 10,4"/></svg>
+      </div>
+    </div>
+    <div class="detail-panel">
+      <div class="detail-inner">
+        <div class="detail-section">
+          <div class="detail-section-title">Inference Stack</div>
+          <div class="detail-rows">
+            ${c.stack.length ? `<div class="detail-row"><span class="detail-label">Frameworks</span><div class="detail-val"><div class="detail-tags">${c.stack.map(s=>`<span class="tag stack">${s}</span>`).join('')}</div></div></div>` : ''}
+            ${c.dg_categories ? c.dg_categories.map(cat=>`<div class="detail-row"><span class="detail-label">${cat.label}</span><div class="detail-val"><div class="detail-tags">${cat.items.map(i=>`<span class="tag stack">${i}</span>`).join('')}</div></div></div>`).join('') : (c.dg_note ? `<div class="detail-row"><span class="detail-label"><a href="https://www.deploygraph.com/company/${c.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:11px;">DeployGraph ↗</a></span><div class="detail-val" style="font-size:11px;color:var(--text-mid);line-height:1.6">${c.dg_note}</div></div>` : '')}
+            ${(c.dg_categories||c.dg_note) ? `<div class="detail-row"><span class="detail-label"></span><div class="detail-val"><a href="https://www.deploygraph.com/company/${c.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:10px;">View on DeployGraph ↗</a></div></div>` : ''}
+            <div class="detail-row"><span class="detail-label">Hardware</span><div class="detail-val">${c.hw||'Unknown'}</div></div>
+            <div class="detail-row"><span class="detail-label">Model type</span><div class="detail-val">${c.model_type||'Unknown'}</div></div>
+            ${c.oss.length ? `<div class="detail-row"><span class="detail-label">OSS Contributions</span><div class="detail-val"><div class="detail-tags">${c.oss.map(o=>o.url?`<a href="${o.url}" target="_blank" class="tag oss" style="text-decoration:none;">${o.label} ↗</a>`:`<span class="tag oss">${o.label||o}</span>`).join('')}</div></div></div>` : ''}
+          </div>
+        </div>
+        ${isEnt ? `<div class="detail-section">
+          <div class="detail-section-title">Inference Volume Estimate</div>
+          ${c.token_est ? tokenBar : '<div class="placeholder-note">Estimate pending — cross-reference pricing pages, API docs, job volume.</div>'}
+        </div>` : ''}
+        <div class="detail-section">
+          <div class="detail-section-title">Org Sophistication</div>
+          <div class="detail-rows">
+            <div class="detail-row"><span class="detail-label">Signal score</span><div class="detail-val">${sophisticationDots(c.sophistication)}</div></div>
+            <div class="detail-row"><span class="detail-label">Hiring signals</span><div class="detail-val">${c.hiring.length ? `<div class="detail-tags">${c.hiring.map(h=>`<span class="tag hiring">${h}</span>`).join('')}</div>` : '<span style="color:var(--text-faint);font-style:italic">None detected</span>'}</div></div>
+            ${(() => { const jobKey = c.sumble_key || c.name; const jobs = SUMBLE_JOBS[jobKey] || []; return jobs.length ? `<div class="detail-row"><span class="detail-label" style="padding-top:4px;">Active jobs</span><div class="detail-val">${jobs.map(j=>`
+              <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+                <div style="flex:1;min-width:0;">
+                  <a href="${j.url}" target="_blank" style="font-size:11px;font-weight:500;color:var(--accent);text-decoration:none;">${j.title} ↗</a>
+                  ${j.techs ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${j.techs}</div>` : ''}
+                </div>
+                <span style="font-size:9px;color:var(--text-faint);white-space:nowrap;font-family:'DM Mono',monospace;flex-shrink:0;">${j.date}</span>
+              </div>`).join('')}</div></div>` : ''; })()}
+            <div class="detail-row"><span class="detail-label">MLOps/DS ratio</span><div class="detail-val" style="color:var(--text-faint);font-style:italic">Pending — pull from LinkedIn/Sumble</div></div>
+            <div class="detail-row"><span class="detail-label">Research papers</span><div class="detail-val" style="color:var(--text-faint);font-style:italic">Pending — check arXiv, MLSys, NeurIPS</div></div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-section-title">Network Connections</div>
+          ${networkSection}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  if(!card) return;
+  card.classList.toggle('open');
+}
+
+function toggleFilter(type, val, section) {
+  filters[section][type] = val;
+  const groupId = type === 'model' ? `fp-model-${section}` : `fp-${type}-${section}`;
+  const group = document.getElementById(groupId);
+  if(group) {
+    group.querySelectorAll('.fpill').forEach(p => {
+      p.classList.toggle('active', p.textContent.trim() === val || (val==='all' && p.textContent.trim()==='All'));
+    });
+  }
+  filterCompanies(section);
+}
+
+function filterCompanies(section) {
+  const f = filters[section];
+  const searchEl = document.querySelector(`#view-${section==='neo'?'neoclouds':'enterprises'} .search-input`);
+  const searchVal = searchEl ? searchEl.value.toLowerCase() : '';
+  const data = section === 'neo' ? NEOCLOUDS : ENTERPRISES;
+  let visible = 0;
+  data.forEach((c, idx) => {
+    const card = document.getElementById(`card-${section}-${idx}`);
+    if(!card) return;
+    let show = true;
+    if(f.stack !== 'all' && !c.stack.includes(f.stack)) show = false;
+
+    if(f.hiring !== 'all') {
+      if(f.hiring === 'None') { if(c.hiring.length > 0) show = false; }
+      else if(!c.hiring.includes(f.hiring)) show = false;
+    }
+    if(f.tier !== 'all' && c.tier !== f.tier) show = false;
+    if(section === 'ent' && f.model !== 'all' && c.model_type !== f.model) show = false;
+    if(searchVal && !c.name.toLowerCase().includes(searchVal) && !c.domain.toLowerCase().includes(searchVal) && !c.category.toLowerCase().includes(searchVal)) show = false;
+    card.style.display = show ? '' : 'none';
+    if(show) visible++;
+  });
+  const rc = document.getElementById(`rc-${section}`);
+  if(rc) rc.textContent = `${visible} ${visible===1?'company':'companies'}`;
+}
+
+function renderGrid(data, containerId, section) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = data.map((c,i) => renderCard(c, i, section)).join('');
+}
+
+let nmTierFilter = 'all';
+let nmSearch = '';
+
+function getNetworkCompanies() {
+  const all = [...NEOCLOUDS, ...ENTERPRISES].filter(c => (c.contacts||[]).length > 0);
+  return all.filter(c => {
+    if(nmTierFilter !== 'all' && c.tier !== nmTierFilter) return false;
+    if(nmSearch && !c.name.toLowerCase().includes(nmSearch) && !c.category.toLowerCase().includes(nmSearch)) return false;
+    return true;
+  });
+}
+
+function filterNetworkTier(tier) {
+  nmTierFilter = tier;
+  document.querySelectorAll('#nm-tier-filters .fpill').forEach(p => {
+    const val = p.textContent.trim() === 'All' ? 'all' : p.textContent.trim() === 'High priority' ? 'high' : 'med';
+    p.classList.toggle('active', val === tier);
+  });
+  renderNetworkMap();
+}
+
+function filterNetworkList(val) {
+  nmSearch = val.toLowerCase();
+  renderNetworkMap();
+}
+
+function renderNetworkMap() {
+  const list = document.getElementById('network-company-list');
+  const companies = getNetworkCompanies();
+  document.getElementById('nm-count').textContent = `${companies.length} companies`;
+
+  // Sort: companies with connections first, then by tier
+  const tierOrder = {high:0, med:1, low:2};
+  companies.sort((a,b) => {
+    const aHasConn = (a.contacts||[]).some(ct=>(ct.connections||[]).length>0) ? 0 : 1;
+    const bHasConn = (b.contacts||[]).some(ct=>(ct.connections||[]).length>0) ? 0 : 1;
+    if(aHasConn !== bHasConn) return aHasConn - bHasConn;
+    return (tierOrder[a.tier]||2) - (tierOrder[b.tier]||2);
+  });
+
+  list.innerHTML = companies.map((c, i) => {
+    const hasConn = (c.contacts||[]).some(ct=>(ct.connections||[]).length>0);
+    const connCount = (c.contacts||[]).reduce((sum,ct)=>sum+(ct.connections||[]).length,0);
+    const tc = tierClass(c.tier);
+    return `<div class="network-person-card ${i===0?'active':''}" onclick="selectNetworkCompany('${c.name.replace(/'/g,"\\'")}')" id="nmc-${i}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <img src="${faviconUrl(c.domain)}" style="width:20px;height:20px;border-radius:4px;border:1px solid var(--border);" onerror="this.style.opacity=0">
+        <div style="flex:1;min-width:0;">
+          <div class="npc-name" style="font-size:12px;">${c.name}</div>
+          <div class="npc-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.category}</div>
+        </div>
+        <span class="tier-badge ${tc}" style="font-size:8px;padding:2px 5px;">${c.tier}</span>
+      </div>
+      <div class="npc-count" style="margin-top:5px;">${hasConn ? `${connCount} warm intro${connCount!==1?'s':''}` : 'No intros mapped'}</div>
+    </div>`;
+  }).join('');
+
+  if(companies.length > 0) selectNetworkCompany(companies[0].name);
+  else document.getElementById('network-connections-panel').innerHTML = '<div class="nc-empty">No companies match filter</div>';
+}
+
+function selectNetworkCompany(name) {
+  const allCompanies = getNetworkCompanies();
+  allCompanies.forEach((c,i) => {
+    const el = document.getElementById(`nmc-${i}`);
+    if(el) el.classList.toggle('active', c.name === name);
+  });
+  const company = [...NEOCLOUDS,...ENTERPRISES].find(c=>c.name===name);
+  const panel = document.getElementById('network-connections-panel');
+  if(!company) return;
+
+  const contacts = company.contacts || [];
+  const tc = tierClass(company.tier);
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+      <img src="${faviconUrl(company.domain)}" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);" onerror="this.style.opacity=0">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);">${company.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${company.category}</div>
+      </div>
+      <span class="tier-badge ${tc}" style="margin-left:auto;">${tierLabel(company.tier)}</span>
+    </div>
+    ${contacts.length === 0
+      ? `<div class="nc-empty">No contacts mapped yet for ${company.name}.</div>`
+      : contacts.map(ct => {
+          const typeLabel = ct.type === 'technical' ? 'Technical Champion' : 'Decision Maker';
+          const conns = ct.connections || [];
+          return `
+          <div class="contact-card" style="margin-bottom:10px;">
+            <div class="contact-card-top">
+              <div class="contact-avatar">${ct.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+              <div class="contact-info">
+                <div class="contact-name">${ct.name}<span class="contact-type-badge ${ct.type}">${typeLabel}</span></div>
+                <div class="contact-title">${ct.title}</div>
+              </div>
+            </div>
+            <div class="contact-connections">
+              ${conns.length > 0
+                ? conns.map(cn=>`
+                  <div class="contact-conn-row">
+                    <div class="conn-avatar">${cn.person.split(' ').map(w=>w[0]).join('')}</div>
+                    <span class="conn-name">${cn.person}</span>
+                    <span style="font-size:10px;color:var(--text-faint);margin-left:2px;">can intro</span>
+                    <span class="conn-strength ${cn.strength}">${cn.strength==='warm'?'Warm':'Possible'}</span>
+                  </div>`).join('')
+                : `<div class="contact-conn-row"><span class="conn-none">No Primary connections mapped yet</span></div>`
+              }
+            </div>
+          </div>`;
+        }).join('')
+    }`;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['neoclouds','enterprises','network'];
+    t.classList.toggle('active', tabs[i]===tab);
+  });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${tab}`).classList.add('active');
+}
+
+// Update header high priority count
+function updateStats() {
+  const highCount = [...NEOCLOUDS, ...ENTERPRISES].filter(c => c.tier === 'high').length;
+  document.getElementById('stat-high').textContent = highCount;
+}
+
+// Init
+renderGrid(NEOCLOUDS, 'grid-neo', 'neo');
+renderGrid(ENTERPRISES, 'grid-ent', 'ent');
+filterCompanies('neo');
+filterCompanies('ent');
+renderNetworkMap();
+updateStats();
+</script>
+</body>
+</html>
